@@ -1,7 +1,6 @@
-import type { LayoutServerLoad } from '../$types';
+import type { LayoutServerLoad } from './$types';
 import { PUBLIC_API_URL } from '$env/static/public';
 import { error, redirect } from '@sveltejs/kit';
-import { resolve } from 'path';
 
 export const load: LayoutServerLoad = async ({ cookies }) => {
 	if (cookies.get('token')) {
@@ -14,12 +13,11 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 		});
 
 		console.log(response);
+
 		if (response.status !== 200) {
-			error(response.status);
+			error(response.status, response.statusText);
 		}
-		const result = await response.json();
-		console.log(result);
 	} else {
-		redirect(308, resolve('/account/login/'));
+		redirect(303, '/account/login?error="unauthorized"');
 	}
 };
