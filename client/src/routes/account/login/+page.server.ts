@@ -31,18 +31,13 @@ export const actions: Actions = {
 		});
 
 		const result = await response.json();
+		console.log(result);
 
-		if (result.errors) {
-			return fail(400, {
-				message: result.message,
-				errors: result.errors,
-				data: {
-					email: emailData
-				}
-			});
+		if (result.error) {
+			return fail(400, { error: 'Invalid credentials.', emailData });
 		} else {
 			cookies.set('token', result.access_token, { path: '/' })
-			redirect(303, resolve('/tasks'))
+			redirect(303, resolve('/tasks'));
 		}
 	}
 };

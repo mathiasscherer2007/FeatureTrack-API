@@ -1,11 +1,21 @@
-<script>
+<script lang='ts'>
 	import { resolve } from '$app/paths';
+	import { slide } from 'svelte/transition';
+	import type { PageProps } from './$types';
+	import { enhance } from '$app/forms';
+
+	let { form }: PageProps = $props();
 
 	let showPassword = $state(false);
+	let hideError = $state(false);
 
     function toggleShowPassword() {
         showPassword = !showPassword;
     }
+
+	function toggleHideError() {
+		hideError = true;
+	}
 </script>
 
 <title>
@@ -14,6 +24,9 @@
 
 <div class="flex h-screen w-full items-center justify-center bg-gray-100 dark:bg-gray-900">
 	<form
+		use:enhance={() => {
+			return async ({ update }) => {await update(); hideError = false};
+		}}
 		action="?/login"
 		method="POST"
 		class="max-w-9/10 w-125 rounded-xl border border-indigo-500 dark:border-indigo-400 p-3 shadow-[0_0_15px_var(--color-indigo-200)] dark:shadow-[0_0_15px_var(--color-indigo-600)]"
@@ -23,14 +36,20 @@
 		>
 			Log in
 		</h1>
+		{#if form?.error && !hideError}
+			<div in:slide out:slide class="m-3 p-2 flex-1 bg-red-100 dark:bg-[rgba(255,0,0,0.2)] rounded flex justify-between outline outline-red-500 dark:outline-red-400 text-red-500 dark:text-red-400">
+				{form.error}
+				<button type="button" onclick={toggleHideError} class="mx-2 cursor-pointer">x</button>
+			</div>
+		{/if}
 		<div class="flex flex-col m-3 my-4">
 			<label for="email" class="text-sm text-gray-600 dark:text-gray-300">E-mail</label>
-			<input type="email" name="email" required class="flex-1 border border-gray-500 p-2 rounded dark:text-gray-300" placeholder="example@example.com" />
+			<input value={form?.error ? form.emailData : ""} type="email" name="email" required class="flex-1 border border-gray-500 p-2 rounded dark:text-gray-300" placeholder="example@example.com" />
 		</div>
 		<div class="flex flex-col m-3 my-4">
 			<label for="password" class="text-sm text-gray-600 dark:text-gray-300">Password</label>
 			<div class="flex-1 flex">
-			    <input type={showPassword ? "text" : "password"} name="password" required class="flex-1 border border-gray-500 border-r-0 rounded-r-none p-2 rounded dark:text-gray-300" />
+			    <input value="" type={showPassword ? "text" : "password"} name="password" required class="flex-1 border border-gray-500 border-r-0 rounded-r-none p-2 rounded dark:text-gray-300" />
                 <button type="button" onclick={toggleShowPassword} class="w-1/9 text-sm border border-gray-500 border-l-0 rounded-r cursor-pointer dark:text-white">{showPassword ? "hide" : "show"}</button>
             </div>
 		</div>
